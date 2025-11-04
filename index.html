@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>고마워톡 글쓰기 도우미</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { margin: 0; padding: 0; }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-orange-50 via-yellow-50 to-red-50">
+  <div class="max-w-7xl mx-auto p-6">
+    <!-- 헤더 -->
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-bold text-gray-900 mb-3">✨ 고마워톡 글쓰기 도우미</h1>
+      <p class="text-gray-600 text-lg">초안을 작성하면 AI가 감동적인 고마워톡 스타일로 변환해드립니다</p>
+    </div>
+
+    <!-- 메인 컨텐츠 -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      
+      <!-- 왼쪽: 초안 작성 -->
+      <div class="bg-white rounded-2xl shadow-lg p-6">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">📝 초안 작성</h2>
+        
+        <textarea 
+          id="draft"
+          placeholder="여기에 초안을 자유롭게 작성해주세요..."
+          class="w-full h-96 p-4 border-2 border-gray-200 rounded-xl resize-none focus:border-orange-400 focus:outline-none"
+        ></textarea>
+
+        <button 
+          id="generateBtn"
+          class="w-full mt-4 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold py-4 px-6 rounded-xl hover:from-orange-600 hover:to-red-600 disabled:opacity-50 transition-all text-lg shadow-lg"
+        >
+          ✨ 고마워톡 스타일로 변환하기
+        </button>
+
+        <div id="error" class="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm hidden"></div>
+      </div>
+
+      <!-- 오른쪽: 완성된 글 -->
+      <div class="bg-white rounded-2xl shadow-lg p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-bold text-gray-800">✨ 완성된 글</h2>
+          <button 
+            id="copyBtn"
+            class="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors hidden"
+          >
+            📋 복사하기
+          </button>
+        </div>
+
+        <div id="result" class="h-96 overflow-y-auto p-4 border-2 border-gray-200 rounded-xl bg-gray-50">
+          <div class="h-full flex items-center justify-center text-gray-400">
+            <p class="text-lg text-center">왼쪽에 초안을 작성하고<br>변환 버튼을 눌러주세요</p>
+          </div>
+        </div>
+
+        <div id="tip" class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl hidden">
+          <p class="text-sm text-blue-800">💡 복사 버튼을 누른 후 고마워톡 에디터에 붙여넣으면 배경색이 적용됩니다!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const draftInput = document.getElementById('draft');
+    const generateBtn = document.getElementById('generateBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const errorDiv = document.getElementById('error');
+    const resultDiv = document.getElementById('result');
+    const tipDiv = document.getElementById('tip');
+
+    generateBtn.addEventListener('click', async () => {
+      const draft = draftInput.value.trim();
+      
+      if (!draft) {
+        showError('초안을 먼저 작성해주세요.');
+        return;
+      }
+
+      generateBtn.disabled = true;
+      generateBtn.textContent = '⏳ AI가 작성 중...';
+      hideError();
+
+      try {
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ draft })
+        });
+
+        const data = await response.json();
+
+        if (data.result) {
+          displayResult(data.result);
+          copyBtn.classList.remove('hidden');
+          tipDiv.classList.remove('hidden');
+        } else {
+          showError('생성 실패: ' + (data.error || '알 수 없는 오류'));
+        }
+      } catch (err) {
+        showError('오류: ' + err.message);
+      } finally {
+        generateBtn.disabled = false;
+        generateBtn.textContent = '✨ 고마워톡 스타일로 변환하기';
+      }
+    });
+
+    copyBtn.addEventListener('click', async () => {
+      const text = resultDiv.textContent;
+      try {
+        await navigator.clipboard.writeText(text);
+        const originalText = copyBtn.textContent;
+        copyBtn.textContent = '✅ 복사됨!';
+        setTimeout(() => {
+          copyBtn.textContent = originalText;
+        }, 2000);
+      } catch (err) {
+        showError('복사 실패: ' + err.message);
+      }
+    });
+
+    function showError(message) {
+      errorDiv.textContent = message;
+      errorDiv.classList.remove('hidden');
+    }
+
+    function hideError() {
+      errorDiv.classList.add('hidden');
+    }
+
+    function displayResult(text) {
+      const lines = text.split('\n');
+      let html = '';
+
+      lines.forEach(line => {
+        if (!line.trim()) {
+          html += '<div style="height:16px"></div>';
+        } else if (line.startsWith('# ')) {
+          html += `<h1 style="font-size:28px;font-weight:bold;margin-top:20px;margin-bottom:16px">${processLine(line.replace('# ', ''))}</h1>`;
+        } else if (line.startsWith('## ')) {
+          html += `<h2 style="font-size:18px;font-weight:bold;margin-top:20px;margin-bottom:8px">${processLine(line.replace('## ', ''))}</h2>`;
+        } else if (line.trim() === '---') {
+          html += '<hr style="border:none;border-top:1px solid #ccc;margin:16px 0">';
+        } else {
+          html += `<p style="margin-bottom:1px;line-height:1.4">${processLine(line)}</p>`;
+        }
+      });
+
+      resultDiv.innerHTML = html;
+    }
+
+    function processLine(text) {
+      let result = text;
+      result = result.replace(/\[RED\](.*?)\[\/RED\]/g, '<mark style="background-color:#ff0000;color:#ffff00;padding:2px 6px;font-weight:bold">$1</mark>');
+      result = result.replace(/\[GREEN\](.*?)\[\/GREEN\]/g, '<mark style="background-color:#0ce90a;color:#ffffff;padding:2px 6px;font-weight:bold">$1</mark>');
+      result = result.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      return result;
+    }
+  </script>
+</body>
+</html>
