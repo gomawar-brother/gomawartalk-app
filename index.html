@@ -152,20 +152,26 @@
     function displayResult(text) {
       const lines = text.split('\n');
       let html = '';
+      let lastWasEmpty = false;
 
       lines.forEach(line => {
         const trimmed = line.trim();
         
         if (!trimmed) {
-          // 빈 줄
-          html += '<p><br class="ProseMirror-trailingBreak"></p>';
+          // 빈 줄: 연속된 빈 줄은 하나만
+          if (!lastWasEmpty) {
+            html += '<p><br class="ProseMirror-trailingBreak"></p>';
+            lastWasEmpty = true;
+          }
         } else if (trimmed.startsWith('# ')) {
-          // 타이틀 (H2만)
+          // 타이틀 (H2)
           const content = processLine(trimmed.replace('# ', ''));
           html += `<h2><strong>${content}</strong></h2>`;
+          lastWasEmpty = false;
         } else {
-          // 모든 내용은 H3 (소제목 없음)
+          // 일반 내용 (H3) - 빈 줄 없이 바로 연결
           html += `<h3>${processLine(trimmed)}</h3>`;
+          lastWasEmpty = false;
         }
       });
 
@@ -180,7 +186,7 @@
         '<span style="color: rgb(255, 255, 0)"><mark data-color="#ff0000" style="background-color: #ff0000; color: inherit">$1</mark></span>'
       );
       
-      // [GREEN]: 연한 초록 배경 (#8ce99a)
+      // [GREEN]: 연한 초록 배경
       result = result.replace(/\[GREEN\](.*?)\[\/GREEN\]/g, 
         '<mark data-color="#8ce99a" style="background-color: #8ce99a; color: inherit">$1</mark>'
       );
