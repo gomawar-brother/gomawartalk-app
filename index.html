@@ -157,13 +157,13 @@
 
       lines.forEach(line => {
         if (!line.trim()) {
-          html += '<div style="height:16px"></div>';
+          html += '<br>';
         } else if (line.startsWith('# ')) {
-          html += `<h1 style="font-size:28px;font-weight:bold;margin-top:20px;margin-bottom:16px">${processLine(line.replace('# ', ''))}</h1>`;
+          html += `<h1 style="font-size:28px;font-weight:bold;margin-top:12px;margin-bottom:12px;color:#ffff00">${processLine(line.replace('# ', ''))}</h1>`;
         } else if (line.startsWith('## ')) {
-          html += `<h2 style="font-size:18px;font-weight:bold;margin-top:20px;margin-bottom:8px">${processLine(line.replace('## ', ''))}</h2>`;
+          html += `<h2 style="font-size:18px;font-weight:bold;margin-top:12px;margin-bottom:6px">${processLine(line.replace('## ', ''))}</h2>`;
         } else if (line.trim() === '---') {
-          html += '<hr style="border:none;border-top:1px solid #ccc;margin:16px 0">';
+          html += '<hr style="border:none;border-top:1px solid #ccc;margin:12px 0">';
         } else {
           html += `<p style="margin-bottom:1px;line-height:1.4">${processLine(line)}</p>`;
         }
