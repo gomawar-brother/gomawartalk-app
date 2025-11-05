@@ -152,26 +152,25 @@
     function displayResult(text) {
       const lines = text.split('\n');
       let html = '';
-      let lastWasEmpty = false;
+      let emoticonCount = 0;
 
-      lines.forEach(line => {
+      lines.forEach((line, index) => {
         const trimmed = line.trim();
         
         if (!trimmed) {
-          // 빈 줄: 연속된 빈 줄은 하나만
-          if (!lastWasEmpty) {
+          // 빈 줄: 🔥 앞에만 허용
+          const nextLine = lines[index + 1]?.trim();
+          if (nextLine && (nextLine.startsWith('🔥') || nextLine.startsWith('💡') || nextLine.startsWith('💚') || nextLine.startsWith('⚡') || nextLine.startsWith('🌈') || nextLine.startsWith('📚'))) {
             html += '<p><br class="ProseMirror-trailingBreak"></p>';
-            lastWasEmpty = true;
           }
+          // 나머지 빈 줄은 무시
         } else if (trimmed.startsWith('# ')) {
           // 타이틀 (H2)
           const content = processLine(trimmed.replace('# ', ''));
           html += `<h2><strong>${content}</strong></h2>`;
-          lastWasEmpty = false;
         } else {
-          // 일반 내용 (H3) - 빈 줄 없이 바로 연결
+          // 일반 내용 (H3)
           html += `<h3>${processLine(trimmed)}</h3>`;
-          lastWasEmpty = false;
         }
       });
 
