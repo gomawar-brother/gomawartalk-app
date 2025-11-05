@@ -110,16 +110,35 @@
     });
 
     copyBtn.addEventListener('click', async () => {
-      const text = resultDiv.textContent;
       try {
-        await navigator.clipboard.writeText(text);
+        // HTML 형식으로 복사
+        const html = resultDiv.innerHTML;
+        const text = resultDiv.textContent;
+        
+        const blob = new ClipboardItem({
+          'text/html': new Blob([html], { type: 'text/html' }),
+          'text/plain': new Blob([text], { type: 'text/plain' })
+        });
+        
+        await navigator.clipboard.write([blob]);
+        
         const originalText = copyBtn.textContent;
         copyBtn.textContent = '✅ 복사됨!';
         setTimeout(() => {
           copyBtn.textContent = originalText;
         }, 2000);
       } catch (err) {
-        showError('복사 실패: ' + err.message);
+        // 폴백: 텍스트만 복사
+        try {
+          await navigator.clipboard.writeText(resultDiv.textContent);
+          const originalText = copyBtn.textContent;
+          copyBtn.textContent = '✅ 복사됨 (텍스트만)';
+          setTimeout(() => {
+            copyBtn.textContent = originalText;
+          }, 2000);
+        } catch (err2) {
+          showError('복사 실패: ' + err2.message);
+        }
       }
     });
 
