@@ -157,15 +157,15 @@
 
       lines.forEach(line => {
         if (!line.trim()) {
-          html += '<br>';
+          html += '<p><br></p>';
         } else if (line.startsWith('# ')) {
-          html += `<h1 style="font-size:28px;font-weight:bold;margin-top:12px;margin-bottom:12px;color:#ffff00">${processLine(line.replace('# ', ''))}</h1>`;
+          html += `<h1><strong><mark style="background-color: rgb(255, 0, 0); color: rgb(255, 255, 0);">${processLine(line.replace('# ', ''))}</mark></strong></h1>`;
         } else if (line.startsWith('## ')) {
-          html += `<h2 style="font-size:18px;font-weight:bold;margin-top:12px;margin-bottom:6px">${processLine(line.replace('## ', ''))}</h2>`;
+          html += `<h2><strong>${processLine(line.replace('## ', ''))}</strong></h2>`;
         } else if (line.trim() === '---') {
-          html += '<hr style="border:none;border-top:1px solid #ccc;margin:12px 0">';
+          html += '<p><br></p>';
         } else {
-          html += `<p style="margin-bottom:1px;line-height:1.4">${processLine(line)}</p>`;
+          html += `<p>${processLine(line)}</p>`;
         }
       });
 
@@ -174,8 +174,8 @@
 
     function processLine(text) {
       let result = text;
-      result = result.replace(/\[RED\](.*?)\[\/RED\]/g, '<mark style="background-color:#ff0000;color:#ffff00;padding:2px 6px;font-weight:bold">$1</mark>');
-      result = result.replace(/\[GREEN\](.*?)\[\/GREEN\]/g, '<mark style="background-color:#0ce90a;color:#ffffff;padding:2px 6px;font-weight:bold">$1</mark>');
+      result = result.replace(/\[RED\](.*?)\[\/RED\]/g, '<mark style="background-color: rgb(255, 0, 0); color: rgb(255, 255, 0);">$1</mark>');
+      result = result.replace(/\[GREEN\](.*?)\[\/GREEN\]/g, '<mark style="background-color: rgb(12, 233, 10); color: rgb(255, 255, 255);">$1</mark>');
       result = result.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
       return result;
     }
