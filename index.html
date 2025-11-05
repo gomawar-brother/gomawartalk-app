@@ -159,9 +159,13 @@
         if (!line.trim()) {
           html += '<p><br></p>';
         } else if (line.startsWith('# ')) {
-          html += `<h1><strong><mark style="background-color: rgb(255, 0, 0); color: rgb(255, 255, 0);">${processLine(line.replace('# ', ''))}</mark></strong></h1>`;
+          // 타이틀: 고마워톡 방식 그대로
+          const content = processLine(line.replace('# ', ''));
+          html += `<h1><strong>${content}</strong></h1>`;
         } else if (line.startsWith('## ')) {
-          html += `<h2><strong>${processLine(line.replace('## ', ''))}</strong></h2>`;
+          // 섹션 제목: 고마워톡 방식 그대로
+          const content = processLine(line.replace('## ', ''));
+          html += `<h2><strong>${content}</strong></h2>`;
         } else if (line.trim() === '---') {
           html += '<p><br></p>';
         } else {
@@ -174,11 +178,14 @@
 
     function processLine(text) {
       let result = text;
-      result = result.replace(/\[RED\](.*?)\[\/RED\]/g, '<mark style="background-color: rgb(255, 0, 0); color: rgb(255, 255, 0);">$1</mark>');
-      result = result.replace(/\[GREEN\](.*?)\[\/GREEN\]/g, '<mark style="background-color: rgb(12, 233, 10); color: rgb(255, 255, 255);">$1</mark>');
+      // RED: 빨간 배경 + inherit로 노란색은 CSS에서 처리
+      result = result.replace(/\[RED\](.*?)\[\/RED\]/g, '<mark data-color="rgb(255, 0, 0)" style="background-color: rgb(255, 0, 0); color: inherit;">$1</mark>');
+      // GREEN: 초록 배경 + 흰색 글씨
+      result = result.replace(/\[GREEN\](.*?)\[\/GREEN\]/g, '<mark data-color="rgb(12, 233, 10)" style="background-color: rgb(12, 233, 10); color: inherit;">$1</mark>');
+      // 볼드
       result = result.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
       return result;
     }
   </script>
-</body>
+</head>
 </html>
