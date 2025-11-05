@@ -157,17 +157,17 @@
 
       lines.forEach(line => {
         if (!line.trim()) {
-          html += '<p><br></p>';
+          html += '<p><br class="ProseMirror-trailingBreak"></p>';
         } else if (line.startsWith('# ')) {
-          // 타이틀: 고마워톡 방식 그대로
+          // H1 타이틀
           const content = processLine(line.replace('# ', ''));
-          html += `<h1><strong>${content}</strong></h1>`;
-        } else if (line.startsWith('## ')) {
-          // 섹션 제목: 고마워톡 방식 그대로
-          const content = processLine(line.replace('## ', ''));
           html += `<h2><strong>${content}</strong></h2>`;
+        } else if (line.startsWith('## ')) {
+          // H2 섹션 제목
+          const content = processLine(line.replace('## ', ''));
+          html += `<h3><strong>${content}</strong></h3>`;
         } else if (line.trim() === '---') {
-          html += '<p><br></p>';
+          html += '<p><br class="ProseMirror-trailingBreak"></p>';
         } else {
           html += `<p>${processLine(line)}</p>`;
         }
@@ -178,14 +178,22 @@
 
     function processLine(text) {
       let result = text;
-      // RED: 빨간 배경 + inherit로 노란색은 CSS에서 처리
-      result = result.replace(/\[RED\](.*?)\[\/RED\]/g, '<mark data-color="rgb(255, 0, 0)" style="background-color: rgb(255, 0, 0); color: inherit;">$1</mark>');
-      // GREEN: 초록 배경 + 흰색 글씨
-      result = result.replace(/\[GREEN\](.*?)\[\/GREEN\]/g, '<mark data-color="rgb(12, 233, 10)" style="background-color: rgb(12, 233, 10); color: inherit;">$1</mark>');
-      // 볼드
+      
+      // [RED] 처리: span으로 노란색 감싸고, 그 안에 mark
+      result = result.replace(/\[RED\](.*?)\[\/RED\]/g, 
+        '<span style="color: rgb(255, 255, 0)"><mark data-color="#ff0000" style="background-color: #ff0000; color: inherit;">$1</mark></span>'
+      );
+      
+      // [GREEN] 처리: span으로 흰색 감싸고, 그 안에 mark
+      result = result.replace(/\[GREEN\](.*?)\[\/GREEN\]/g, 
+        '<span style="color: rgb(255, 255, 255)"><mark data-color="#0ce99a" style="background-color: #0ce99a; color: inherit;">$1</mark></span>'
+      );
+      
+      // 볼드 처리
       result = result.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      
       return result;
     }
   </script>
-</head>
+</body>
 </html>
