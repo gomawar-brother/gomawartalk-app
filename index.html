@@ -115,10 +115,22 @@
           </div>
         </div>
 
+        <!-- 수정 횟수 표시 -->
+        <div id="rewriteCounter" class="mb-4 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl border border-purple-200 hidden">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-bold text-gray-700">🎯 AI 재작성 횟수</span>
+            <span id="counterText" class="text-lg font-bold text-purple-600">0/3</span>
+          </div>
+          <p class="text-xs text-gray-600 leading-relaxed">
+            AI는 초안을 만들고, <strong>당신은 감동을 완성합니다.</strong><br>
+            고객을 가장 잘 아는 건 당신이니까요. 💪
+          </p>
+        </div>
+
         <!-- 편집 가능 영역 -->
         <textarea
           id="editArea"
-          class="w-full h-[500px] p-4 border-2 border-gray-200 rounded-xl resize-none focus:border-orange-400 focus:outline-none text-sm font-mono hidden"
+          class="w-full h-[450px] p-4 border-2 border-gray-200 rounded-xl resize-none focus:border-orange-400 focus:outline-none text-sm font-mono hidden"
           placeholder="여기에서 초안을 자유롭게 수정하세요..."
         ></textarea>
 
@@ -126,7 +138,7 @@
         <div id="copyContainer" style="position: absolute; left: -9999px;"></div>
 
         <!-- 미리보기 영역 -->
-        <div id="result" class="h-[500px] overflow-y-auto p-4 border-2 border-gray-200 rounded-xl bg-gray-50">
+        <div id="result" class="h-[450px] overflow-y-auto p-4 border-2 border-gray-200 rounded-xl bg-gray-50">
           <div class="h-full flex items-center justify-center text-gray-400">
             <p class="text-lg text-center">왼쪽에 4가지 정보를 입력하고<br>작성 버튼을 눌러주세요</p>
           </div>
@@ -136,7 +148,7 @@
           <p class="text-sm text-blue-800">
             💡 <strong>사용 방법:</strong><br>
             1. <strong>"수정하기"</strong> 버튼으로 내용 편집<br>
-            2. <strong>"AI 재작성"</strong> 버튼으로 다듬기<br>
+            2. <strong>"AI 재작성"</strong> 버튼으로 다듬기 (최대 3회)<br>
             3. 만족하면 <strong>"복사하기"</strong> → 고마워톡에 붙여넣기
           </p>
         </div>
@@ -157,7 +169,7 @@
           내용을 자유롭게 편집하세요.<br><br>
           수정 후 <strong class="text-purple-600">"AI 재작성"</strong> 버튼을 누르면<br>
           AI가 당신의 의도를 반영하여 다듬어줍니다.<br><br>
-          💡 만족할 때까지 반복하세요!
+          💡 최대 3회까지 재작성 가능합니다!
         </p>
       </div>
       <button 
@@ -165,6 +177,31 @@
         class="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold py-3 px-6 rounded-xl hover:from-orange-600 hover:to-red-600 transition-all"
       >
         시작하기
+      </button>
+    </div>
+  </div>
+
+  <!-- 재작성 한도 초과 팝업 -->
+  <div id="limitModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-2xl p-8 max-w-md mx-4 shadow-2xl">
+      <div class="text-center mb-6">
+        <div class="text-6xl mb-4">🎯</div>
+        <h3 class="text-2xl font-bold text-gray-900 mb-2">AI 재작성 완료</h3>
+      </div>
+      <div class="bg-blue-50 rounded-xl p-5 mb-6">
+        <p class="text-gray-700 leading-relaxed">
+          AI 재작성 3회를 모두 사용했습니다.<br><br>
+          이제는 <strong class="text-blue-600">당신의 차례</strong>입니다!<br><br>
+          고객의 마음을 움직이는 최종 터치는<br>
+          고객을 가장 잘 아는 <strong class="text-blue-600">당신만이</strong> 할 수 있습니다.<br><br>
+          💪 직접 수정하거나, 복사하여 고마워톡에서 완성하세요!
+        </p>
+      </div>
+      <button 
+        id="closeLimitModal"
+        class="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-3 px-6 rounded-xl hover:from-blue-600 hover:to-purple-600 transition-all"
+      >
+        알겠습니다
       </button>
     </div>
   </div>
@@ -186,13 +223,33 @@
     const copyContainer = document.getElementById('copyContainer');
     const completeModal = document.getElementById('completeModal');
     const closeModal = document.getElementById('closeModal');
+    const limitModal = document.getElementById('limitModal');
+    const closeLimitModal = document.getElementById('closeLimitModal');
+    const rewriteCounter = document.getElementById('rewriteCounter');
+    const counterText = document.getElementById('counterText');
 
     let rawText = '';
     let isEditMode = false;
+    let rewriteCount = 0;
+    const MAX_REWRITES = 3;
 
     closeModal.addEventListener('click', () => {
       completeModal.classList.add('hidden');
     });
+
+    closeLimitModal.addEventListener('click', () => {
+      limitModal.classList.add('hidden');
+    });
+
+    function updateCounter() {
+      counterText.textContent = `${rewriteCount}/${MAX_REWRITES}`;
+      
+      if (rewriteCount >= MAX_REWRITES) {
+        rewriteBtn.disabled = true;
+        rewriteBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        rewriteBtn.textContent = '🔒 재작성 완료';
+      }
+    }
 
     // 초기 생성
     generateBtn.addEventListener('click', async () => {
@@ -224,10 +281,14 @@
           editArea.value = rawText;
           displayResult(rawText);
           
+          rewriteCount = 0;
+          updateCounter();
+          
           editBtn.classList.remove('hidden');
           rewriteBtn.classList.remove('hidden');
           copyBtn.classList.remove('hidden');
           tipDiv.classList.remove('hidden');
+          rewriteCounter.classList.remove('hidden');
           
           completeModal.classList.remove('hidden');
         } else {
@@ -246,7 +307,6 @@
       isEditMode = !isEditMode;
       
       if (isEditMode) {
-        // 편집 모드
         editArea.classList.remove('hidden');
         editArea.classList.add('edit-mode');
         resultDiv.classList.add('hidden');
@@ -255,7 +315,6 @@
         editBtn.classList.add('bg-green-500', 'hover:bg-green-600');
         modeTitle.textContent = '✏️ 편집 모드';
       } else {
-        // 미리보기 모드
         rawText = editArea.value;
         displayResult(rawText);
         editArea.classList.add('hidden');
@@ -269,6 +328,11 @@
 
     // AI 재작성
     rewriteBtn.addEventListener('click', async () => {
+      if (rewriteCount >= MAX_REWRITES) {
+        limitModal.classList.remove('hidden');
+        return;
+      }
+
       const draft = editArea.value.trim();
       
       if (!draft) {
@@ -293,11 +357,21 @@
           rawText = data.result;
           editArea.value = rawText;
           
+          rewriteCount++;
+          updateCounter();
+          
           // 자동으로 미리보기 모드로 전환
           if (isEditMode) {
             editBtn.click();
           } else {
             displayResult(rawText);
+          }
+
+          // 3회 도달 시 알림
+          if (rewriteCount >= MAX_REWRITES) {
+            setTimeout(() => {
+              limitModal.classList.remove('hidden');
+            }, 500);
           }
         } else {
           showError('재작성 실패: ' + (data.error || '알 수 없는 오류'));
@@ -305,8 +379,10 @@
       } catch (err) {
         showError('오류: ' + err.message);
       } finally {
-        rewriteBtn.disabled = false;
-        rewriteBtn.textContent = '🤖 AI 재작성';
+        if (rewriteCount < MAX_REWRITES) {
+          rewriteBtn.disabled = false;
+          rewriteBtn.textContent = '🤖 AI 재작성';
+        }
       }
     });
 
