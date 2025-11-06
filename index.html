@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>고마워톡 글쓰기 도우미</title>
+  <title>고마워톡 신청페이지 작성 도우미</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body { margin: 0; padding: 0; }
@@ -13,28 +13,70 @@
   <div class="max-w-7xl mx-auto p-6">
     <!-- 헤더 -->
     <div class="text-center mb-8">
-      <h1 class="text-4xl font-bold text-gray-900 mb-3">✨ 고마워톡 글쓰기 도우미</h1>
-      <p class="text-gray-600 text-lg">초안을 작성하면 AI가 감동적인 고마워톡 스타일로 변환해드립니다</p>
+      <h1 class="text-4xl font-bold text-gray-900 mb-3">✨ 고마워톡 신청페이지 작성 도우미</h1>
+      <p class="text-gray-600 text-lg">4가지 정보만 입력하면 전문 카피라이터처럼 작성됩니다</p>
     </div>
 
     <!-- 메인 컨텐츠 -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       
-      <!-- 왼쪽: 초안 작성 -->
+      <!-- 왼쪽: 입력 폼 -->
       <div class="bg-white rounded-2xl shadow-lg p-6">
-        <h2 class="text-xl font-bold text-gray-800 mb-4">📝 초안 작성</h2>
+        <h2 class="text-xl font-bold text-gray-800 mb-6">📝 정보 입력</h2>
         
-        <textarea 
-          id="draft"
-          placeholder="여기에 초안을 자유롭게 작성해주세요..."
-          class="w-full h-96 p-4 border-2 border-gray-200 rounded-xl resize-none focus:border-orange-400 focus:outline-none"
-        ></textarea>
+        <!-- 필드 1 -->
+        <div class="mb-6">
+          <label class="block text-sm font-bold text-gray-700 mb-2">
+            1️⃣ 타깃 고객은 누구인가?
+          </label>
+          <textarea 
+            id="target"
+            placeholder="예: 퇴사를 고민하는 30대 직장인&#10;예: SNS 마케팅이 막막한 소상공인"
+            class="w-full h-20 p-3 border-2 border-gray-200 rounded-lg resize-none focus:border-orange-400 focus:outline-none text-sm"
+          ></textarea>
+        </div>
+
+        <!-- 필드 2 -->
+        <div class="mb-6">
+          <label class="block text-sm font-bold text-gray-700 mb-2">
+            2️⃣ 타깃 고객의 문제는 무엇인가?
+          </label>
+          <textarea 
+            id="problem"
+            placeholder="예: 퇴사 후 뭘 해야 할지 막막하고, 경제적 불안이 크다&#10;예: SNS 콘텐츠를 만들어도 반응이 없어 시간만 낭비된다"
+            class="w-full h-24 p-3 border-2 border-gray-200 rounded-lg resize-none focus:border-orange-400 focus:outline-none text-sm"
+          ></textarea>
+        </div>
+
+        <!-- 필드 3 -->
+        <div class="mb-6">
+          <label class="block text-sm font-bold text-gray-700 mb-2">
+            3️⃣ 당신은 무엇을 제공하나?
+          </label>
+          <textarea 
+            id="solution"
+            placeholder="예: 나만의 강점을 찾고 수익화하는 3단계 로드맵&#10;예: 조회수를 10배 올리는 콘텐츠 제작 공식"
+            class="w-full h-24 p-3 border-2 border-gray-200 rounded-lg resize-none focus:border-orange-400 focus:outline-none text-sm"
+          ></textarea>
+        </div>
+
+        <!-- 필드 4 -->
+        <div class="mb-6">
+          <label class="block text-sm font-bold text-gray-700 mb-2">
+            4️⃣ 신청 정보 (날짜, 시간, 방법 등)
+          </label>
+          <textarea 
+            id="info"
+            placeholder="예: 11월 15일 (금) 오후 8시 / 온라인 줌 / 무료&#10;예: 매주 토요일 오전 10시 / 강남역 3번 출구 / 49,000원"
+            class="w-full h-20 p-3 border-2 border-gray-200 rounded-lg resize-none focus:border-orange-400 focus:outline-none text-sm"
+          ></textarea>
+        </div>
 
         <button 
           id="generateBtn"
-          class="w-full mt-4 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold py-4 px-6 rounded-xl hover:from-orange-600 hover:to-red-600 disabled:opacity-50 transition-all text-lg shadow-lg"
+          class="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold py-4 px-6 rounded-xl hover:from-orange-600 hover:to-red-600 disabled:opacity-50 transition-all text-lg shadow-lg"
         >
-          ✨ 고마워톡 스타일로 변환하기
+          ✨ 신청페이지 자동 작성하기
         </button>
 
         <div id="error" class="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm hidden"></div>
@@ -43,7 +85,7 @@
       <!-- 오른쪽: 완성된 글 -->
       <div class="bg-white rounded-2xl shadow-lg p-6">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="text-xl font-bold text-gray-800">✨ 완성된 글</h2>
+          <h2 class="text-xl font-bold text-gray-800">✨ 완성된 신청페이지</h2>
           <button 
             id="copyBtn"
             class="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors hidden"
@@ -52,21 +94,24 @@
           </button>
         </div>
 
-        <div id="result" class="h-96 overflow-y-auto p-4 border-2 border-gray-200 rounded-xl bg-gray-50">
+        <div id="result" class="h-[600px] overflow-y-auto p-4 border-2 border-gray-200 rounded-xl bg-gray-50">
           <div class="h-full flex items-center justify-center text-gray-400">
-            <p class="text-lg text-center">왼쪽에 초안을 작성하고<br>변환 버튼을 눌러주세요</p>
+            <p class="text-lg text-center">왼쪽에 4가지 정보를 입력하고<br>작성 버튼을 눌러주세요</p>
           </div>
         </div>
 
         <div id="tip" class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl hidden">
-          <p class="text-sm text-blue-800">💡 복사 버튼을 누른 후 고마워톡 에디터에 붙여넣으면 배경색이 적용됩니다!</p>
+          <p class="text-sm text-blue-800">💡 <strong>복사 후 고마워톡 신청페이지에 붙여넣으세요!</strong><br>색상과 줄간격이 자동으로 적용됩니다.</p>
         </div>
       </div>
     </div>
   </div>
 
   <script>
-    const draftInput = document.getElementById('draft');
+    const targetInput = document.getElementById('target');
+    const problemInput = document.getElementById('problem');
+    const solutionInput = document.getElementById('solution');
+    const infoInput = document.getElementById('info');
     const generateBtn = document.getElementById('generateBtn');
     const copyBtn = document.getElementById('copyBtn');
     const errorDiv = document.getElementById('error');
@@ -74,22 +119,25 @@
     const tipDiv = document.getElementById('tip');
 
     generateBtn.addEventListener('click', async () => {
-      const draft = draftInput.value.trim();
+      const target = targetInput.value.trim();
+      const problem = problemInput.value.trim();
+      const solution = solutionInput.value.trim();
+      const info = infoInput.value.trim();
       
-      if (!draft) {
-        showError('초안을 먼저 작성해주세요.');
+      if (!target || !problem || !solution || !info) {
+        showError('4가지 정보를 모두 입력해주세요.');
         return;
       }
 
       generateBtn.disabled = true;
-      generateBtn.textContent = '⏳ AI가 작성 중...';
+      generateBtn.textContent = '⏳ AI가 작성 중... (10-15초 소요)';
       hideError();
 
       try {
         const response = await fetch('/api/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ draft })
+          body: JSON.stringify({ target, problem, solution, info })
         });
 
         const data = await response.json();
@@ -105,38 +153,21 @@
         showError('오류: ' + err.message);
       } finally {
         generateBtn.disabled = false;
-        generateBtn.textContent = '✨ 고마워톡 스타일로 변환하기';
+        generateBtn.textContent = '✨ 신청페이지 자동 작성하기';
       }
     });
 
     copyBtn.addEventListener('click', async () => {
+      const text = resultDiv.textContent;
       try {
-        const html = resultDiv.innerHTML;
-        const text = resultDiv.textContent;
-        
-        const blob = new ClipboardItem({
-          'text/html': new Blob([html], { type: 'text/html' }),
-          'text/plain': new Blob([text], { type: 'text/plain' })
-        });
-        
-        await navigator.clipboard.write([blob]);
-        
+        await navigator.clipboard.writeText(text);
         const originalText = copyBtn.textContent;
         copyBtn.textContent = '✅ 복사됨!';
         setTimeout(() => {
           copyBtn.textContent = originalText;
         }, 2000);
       } catch (err) {
-        try {
-          await navigator.clipboard.writeText(resultDiv.textContent);
-          const originalText = copyBtn.textContent;
-          copyBtn.textContent = '✅ 복사됨 (텍스트만)';
-          setTimeout(() => {
-            copyBtn.textContent = originalText;
-          }, 2000);
-        } catch (err2) {
-          showError('복사 실패: ' + err2.message);
-        }
+        showError('복사 실패: ' + err.message);
       }
     });
 
@@ -152,25 +183,25 @@
     function displayResult(text) {
       const lines = text.split('\n');
       let html = '';
-      let emoticonCount = 0;
 
-      lines.forEach((line, index) => {
+      lines.forEach(line => {
         const trimmed = line.trim();
         
         if (!trimmed) {
-          // 빈 줄: 🔥 앞에만 허용
-          const nextLine = lines[index + 1]?.trim();
-          if (nextLine && (nextLine.startsWith('🔥') || nextLine.startsWith('💡') || nextLine.startsWith('💚') || nextLine.startsWith('⚡') || nextLine.startsWith('🌈') || nextLine.startsWith('📚'))) {
-            html += '<p><br class="ProseMirror-trailingBreak"></p>';
-          }
-          // 나머지 빈 줄은 무시
+          // 빈 줄 → 16px 간격
+          html += '<div style="height:16px"></div>';
+        } else if (trimmed === '---') {
+          // 구분선 → 위아래 여백 포함
+          html += '<div style="height:24px"></div><hr style="border:none;border-top:2px solid #e5e7eb;margin:0"><div style="height:24px"></div>';
         } else if (trimmed.startsWith('# ')) {
-          // 타이틀 (H2)
-          const content = processLine(trimmed.replace('# ', ''));
-          html += `<h2><strong>${content}</strong></h2>`;
+          // 메인 타이틀 → 큰 제목
+          html += `<h1 style="font-size:32px;font-weight:bold;line-height:1.4;margin:0 0 12px 0">${processLine(trimmed.replace('# ', ''))}</h1>`;
+        } else if (trimmed.startsWith('## ')) {
+          // 섹션 제목 → 중간 제목
+          html += `<h2 style="font-size:20px;font-weight:bold;line-height:1.5;margin:20px 0 12px 0">${processLine(trimmed.replace('## ', ''))}</h2>`;
         } else {
-          // 일반 내용 (H3)
-          html += `<h3>${processLine(trimmed)}</h3>`;
+          // 일반 문장 → 줄간격 1.6으로 가독성 확보
+          html += `<p style="font-size:16px;line-height:1.8;margin:0 0 8px 0">${processLine(trimmed)}</p>`;
         }
       });
 
@@ -179,20 +210,12 @@
 
     function processLine(text) {
       let result = text;
-      
-      // [RED]: 빨간 배경 + 노란 글씨
-      result = result.replace(/\[RED\](.*?)\[\/RED\]/g, 
-        '<span style="color: rgb(255, 255, 0)"><mark data-color="#ff0000" style="background-color: #ff0000; color: inherit">$1</mark></span>'
-      );
-      
-      // [GREEN]: 연한 초록 배경
-      result = result.replace(/\[GREEN\](.*?)\[\/GREEN\]/g, 
-        '<mark data-color="#8ce99a" style="background-color: #8ce99a; color: inherit">$1</mark>'
-      );
-      
-      // 볼드
+      // [RED] 태그 → 빨강 배경 + 노랑 글자
+      result = result.replace(/\[RED\](.*?)\[\/RED\]/g, '<mark style="background-color:#ff0000;color:#ffff00;padding:3px 8px;font-weight:bold;border-radius:4px">$1</mark>');
+      // [GREEN] 태그 → 초록 배경 + 흰색 글자
+      result = result.replace(/\[GREEN\](.*?)\[\/GREEN\]/g, '<mark style="background-color:#0ce90a;color:#ffffff;padding:3px 8px;font-weight:bold;border-radius:4px">$1</mark>');
+      // **볼드** → 굵게
       result = result.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-      
       return result;
     }
   </script>
