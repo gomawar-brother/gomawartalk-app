@@ -7,6 +7,10 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body { margin: 0; padding: 0; }
+    .edit-mode {
+      background-color: #fffbeb !important;
+      border: 2px dashed #f59e0b !important;
+    }
   </style>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-orange-50 via-yellow-50 to-red-50">
@@ -14,15 +18,15 @@
     <!-- 헤더 -->
     <div class="text-center mb-8">
       <h1 class="text-4xl font-bold text-gray-900 mb-2">✨ 강사를 위한 고마워톡 신청페이지 작성 도우미</h1>
-      <p class="text-gray-500 text-sm mb-3">v2.0 | 2024.11.06 배포</p>
-      <p class="text-gray-600 text-lg">4가지 정보만 입력하면 AI가 초안을 작성해드립니다</p>
+      <p class="text-gray-500 text-sm mb-3">v2.1 | 2024.11.06 배포</p>
+      <p class="text-gray-600 text-lg">AI와 협업하여 완벽한 신청페이지를 만드세요</p>
     </div>
 
     <!-- 메인 컨텐츠 -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       
       <!-- 왼쪽: 입력 폼 -->
-      <div class="bg-white rounded-2xl shadow-lg p-6">
+      <div class="bg-white rounded-2xl shadow-lg p-6" id="inputSection">
         <h2 class="text-xl font-bold text-gray-800 mb-6">📝 정보 입력</h2>
         
         <!-- 필드 1 -->
@@ -83,22 +87,46 @@
         <div id="error" class="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm hidden"></div>
       </div>
 
-      <!-- 오른쪽: 완성된 글 -->
+      <!-- 오른쪽: AI 초안 및 편집 -->
       <div class="bg-white rounded-2xl shadow-lg p-6">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="text-xl font-bold text-gray-800">✨ AI 초안 작성</h2>
-          <button 
-            id="copyBtn"
-            class="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors hidden"
-          >
-            📋 복사하기
-          </button>
+          <h2 class="text-xl font-bold text-gray-800">
+            <span id="modeTitle">✨ AI 초안 작성</span>
+          </h2>
+          <div class="flex gap-2">
+            <button 
+              id="editBtn"
+              class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors hidden"
+            >
+              ✏️ 수정하기
+            </button>
+            <button 
+              id="rewriteBtn"
+              class="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors hidden"
+            >
+              🤖 AI 재작성
+            </button>
+            <button 
+              id="copyBtn"
+              class="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors hidden"
+            >
+              📋 복사하기
+            </button>
+          </div>
         </div>
+
+        <!-- 편집 가능 영역 -->
+        <textarea
+          id="editArea"
+          class="w-full h-[500px] p-4 border-2 border-gray-200 rounded-xl resize-none focus:border-orange-400 focus:outline-none text-sm font-mono hidden"
+          placeholder="여기에서 초안을 자유롭게 수정하세요..."
+        ></textarea>
 
         <!-- 숨겨진 복사용 컨테이너 -->
         <div id="copyContainer" style="position: absolute; left: -9999px;"></div>
 
-        <div id="result" class="h-[600px] overflow-y-auto p-4 border-2 border-gray-200 rounded-xl bg-gray-50">
+        <!-- 미리보기 영역 -->
+        <div id="result" class="h-[500px] overflow-y-auto p-4 border-2 border-gray-200 rounded-xl bg-gray-50">
           <div class="h-full flex items-center justify-center text-gray-400">
             <p class="text-lg text-center">왼쪽에 4가지 정보를 입력하고<br>작성 버튼을 눌러주세요</p>
           </div>
@@ -107,8 +135,9 @@
         <div id="tip" class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl hidden">
           <p class="text-sm text-blue-800">
             💡 <strong>사용 방법:</strong><br>
-            1. "복사하기" 버튼 클릭<br>
-            2. 고마워톡 신청페이지 에디터에 <strong>Ctrl+V (Mac: Cmd+V)</strong> 붙여넣기
+            1. <strong>"수정하기"</strong> 버튼으로 내용 편집<br>
+            2. <strong>"AI 재작성"</strong> 버튼으로 다듬기<br>
+            3. 만족하면 <strong>"복사하기"</strong> → 고마워톡에 붙여넣기
           </p>
         </div>
       </div>
@@ -124,18 +153,18 @@
       </div>
       <div class="bg-orange-50 rounded-xl p-5 mb-6">
         <p class="text-gray-700 leading-relaxed">
-          AI가 작성한 내용은 <strong class="text-orange-600">초안</strong>입니다.<br><br>
-          고마워톡 에디터에 붙여넣은 후,<br>
-          <strong class="text-orange-600">고객에게 딱 맞는 내용으로 다듬어주세요.</strong><br><br>
-          💡 색상 강조, 이모지 추가, 문장 수정 등<br>
-          당신만의 터치로 완성해보세요!
+          이제 <strong class="text-orange-600">"수정하기"</strong> 버튼을 눌러<br>
+          내용을 자유롭게 편집하세요.<br><br>
+          수정 후 <strong class="text-purple-600">"AI 재작성"</strong> 버튼을 누르면<br>
+          AI가 당신의 의도를 반영하여 다듬어줍니다.<br><br>
+          💡 만족할 때까지 반복하세요!
         </p>
       </div>
       <button 
         id="closeModal"
         class="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold py-3 px-6 rounded-xl hover:from-orange-600 hover:to-red-600 transition-all"
       >
-        확인했습니다
+        시작하기
       </button>
     </div>
   </div>
@@ -146,18 +175,26 @@
     const solutionInput = document.getElementById('solution');
     const infoInput = document.getElementById('info');
     const generateBtn = document.getElementById('generateBtn');
+    const editBtn = document.getElementById('editBtn');
+    const rewriteBtn = document.getElementById('rewriteBtn');
     const copyBtn = document.getElementById('copyBtn');
     const errorDiv = document.getElementById('error');
     const resultDiv = document.getElementById('result');
+    const editArea = document.getElementById('editArea');
     const tipDiv = document.getElementById('tip');
+    const modeTitle = document.getElementById('modeTitle');
     const copyContainer = document.getElementById('copyContainer');
     const completeModal = document.getElementById('completeModal');
     const closeModal = document.getElementById('closeModal');
+
+    let rawText = '';
+    let isEditMode = false;
 
     closeModal.addEventListener('click', () => {
       completeModal.classList.add('hidden');
     });
 
+    // 초기 생성
     generateBtn.addEventListener('click', async () => {
       const target = targetInput.value.trim();
       const problem = problemInput.value.trim();
@@ -183,11 +220,15 @@
         const data = await response.json();
 
         if (data.result) {
-          displayResult(data.result);
+          rawText = data.result;
+          editArea.value = rawText;
+          displayResult(rawText);
+          
+          editBtn.classList.remove('hidden');
+          rewriteBtn.classList.remove('hidden');
           copyBtn.classList.remove('hidden');
           tipDiv.classList.remove('hidden');
           
-          // 팝업 표시
           completeModal.classList.remove('hidden');
         } else {
           showError('생성 실패: ' + (data.error || '알 수 없는 오류'));
@@ -200,24 +241,88 @@
       }
     });
 
+    // 수정 모드 토글
+    editBtn.addEventListener('click', () => {
+      isEditMode = !isEditMode;
+      
+      if (isEditMode) {
+        // 편집 모드
+        editArea.classList.remove('hidden');
+        editArea.classList.add('edit-mode');
+        resultDiv.classList.add('hidden');
+        editBtn.textContent = '👁️ 미리보기';
+        editBtn.classList.remove('bg-blue-500', 'hover:bg-blue-600');
+        editBtn.classList.add('bg-green-500', 'hover:bg-green-600');
+        modeTitle.textContent = '✏️ 편집 모드';
+      } else {
+        // 미리보기 모드
+        rawText = editArea.value;
+        displayResult(rawText);
+        editArea.classList.add('hidden');
+        resultDiv.classList.remove('hidden');
+        editBtn.textContent = '✏️ 수정하기';
+        editBtn.classList.remove('bg-green-500', 'hover:bg-green-600');
+        editBtn.classList.add('bg-blue-500', 'hover:bg-blue-600');
+        modeTitle.textContent = '👁️ 미리보기';
+      }
+    });
+
+    // AI 재작성
+    rewriteBtn.addEventListener('click', async () => {
+      const draft = editArea.value.trim();
+      
+      if (!draft) {
+        showError('수정할 내용이 없습니다.');
+        return;
+      }
+
+      rewriteBtn.disabled = true;
+      rewriteBtn.textContent = '⏳ AI 재작성 중...';
+      hideError();
+
+      try {
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ draft })
+        });
+
+        const data = await response.json();
+
+        if (data.result) {
+          rawText = data.result;
+          editArea.value = rawText;
+          
+          // 자동으로 미리보기 모드로 전환
+          if (isEditMode) {
+            editBtn.click();
+          } else {
+            displayResult(rawText);
+          }
+        } else {
+          showError('재작성 실패: ' + (data.error || '알 수 없는 오류'));
+        }
+      } catch (err) {
+        showError('오류: ' + err.message);
+      } finally {
+        rewriteBtn.disabled = false;
+        rewriteBtn.textContent = '🤖 AI 재작성';
+      }
+    });
+
+    // 복사
     copyBtn.addEventListener('click', async () => {
       try {
-        // 결과를 복사 컨테이너에 복제
         copyContainer.innerHTML = resultDiv.innerHTML;
         
-        // 범위 선택
         const range = document.createRange();
         range.selectNodeContents(copyContainer);
         
-        // 선택 영역 설정
         const selection = window.getSelection();
         selection.removeAllRanges();
         selection.addRange(range);
         
-        // 복사 실행
         document.execCommand('copy');
-        
-        // 선택 해제
         selection.removeAllRanges();
         
         const originalText = copyBtn.textContent;
@@ -247,31 +352,22 @@
         const trimmed = line.trim();
         
         if (!trimmed) {
-          // 빈 줄 무시 (고마워톡은 자동 줄간격)
           return;
         } else if (trimmed === '---') {
-          // 구분선
           html += '<hr contenteditable="false">';
         } else if (trimmed.startsWith('# ')) {
-          // 메인 타이틀 → H1 또는 H2 (길이에 따라)
           const content = processLine(trimmed.replace('# ', ''));
-          const tag = content.length > 20 ? 'h2' : 'h1';
-          html += `<${tag}><strong>${content}</strong></${tag}>`;
+          html += `<h1><strong>${content}</strong></h1>`;
         } else if (trimmed.startsWith('## ')) {
-          // 섹션 제목 또는 서브타이틀 → H3
           const content = trimmed.replace('## ', '');
           if (content.includes('📖') || content.includes('🔥') || content.includes('💚')) {
-            // 섹션 제목
             html += `<h3><strong>${processLine(content)}</strong></h3>`;
           } else {
-            // 서브타이틀
             html += `<h3>${processLine(content)}</h3>`;
           }
         } else if (trimmed.startsWith('🔥 ') || trimmed.startsWith('🎯 ')) {
-          // 리스트 또는 CTA → H4
           html += `<h4>${processLine(trimmed)}</h4>`;
         } else {
-          // 일반 문장 → <p>
           html += `<p>${processLine(trimmed)}</p>`;
         }
       });
@@ -281,11 +377,8 @@
 
     function processLine(text) {
       let result = text;
-      // [RED] → 고마워톡 형식
       result = result.replace(/\[RED\](.*?)\[\/RED\]/g, '<span style="color: rgb(255, 255, 0)"><mark data-color="#ff0000" style="background-color: #ff0000; color: inherit">$1</mark></span>');
-      // [GREEN] → 고마워톡 형식
       result = result.replace(/\[GREEN\](.*?)\[\/GREEN\]/g, '<mark data-color="#8ce99a" style="background-color: #8ce99a; color: inherit">$1</mark>');
-      // **볼드**
       result = result.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
       return result;
     }
