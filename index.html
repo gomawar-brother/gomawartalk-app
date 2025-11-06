@@ -90,9 +90,12 @@
             id="copyBtn"
             class="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors hidden"
           >
-            📋 HTML 복사
+            📋 복사하기
           </button>
         </div>
+
+        <!-- 숨겨진 복사용 컨테이너 -->
+        <div id="copyContainer" style="position: absolute; left: -9999px;"></div>
 
         <div id="result" class="h-[600px] overflow-y-auto p-4 border-2 border-gray-200 rounded-xl bg-gray-50">
           <div class="h-full flex items-center justify-center text-gray-400">
@@ -101,7 +104,12 @@
         </div>
 
         <div id="tip" class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl hidden">
-          <p class="text-sm text-blue-800">💡 <strong>"HTML 복사" 버튼을 누른 후</strong><br>고마워톡 신청페이지 에디터에 붙여넣으세요!</p>
+          <p class="text-sm text-blue-800">
+            💡 <strong>사용 방법:</strong><br>
+            1. "복사하기" 버튼 클릭<br>
+            2. 고마워톡 신청페이지 에디터에 <strong>Ctrl+V (Mac: Cmd+V)</strong> 붙여넣기<br>
+            3. 색상과 서식이 자동으로 적용됩니다!
+          </p>
         </div>
       </div>
     </div>
@@ -117,8 +125,7 @@
     const errorDiv = document.getElementById('error');
     const resultDiv = document.getElementById('result');
     const tipDiv = document.getElementById('tip');
-
-    let generatedHTML = '';
+    const copyContainer = document.getElementById('copyContainer');
 
     generateBtn.addEventListener('click', async () => {
       const target = targetInput.value.trim();
@@ -145,8 +152,7 @@
         const data = await response.json();
 
         if (data.result) {
-          generatedHTML = convertToGomawartalkHTML(data.result);
-          displayPreview(generatedHTML);
+          displayResult(data.result);
           copyBtn.classList.remove('hidden');
           tipDiv.classList.remove('hidden');
         } else {
@@ -162,7 +168,24 @@
 
     copyBtn.addEventListener('click', async () => {
       try {
-        await navigator.clipboard.writeText(generatedHTML);
+        // 결과를 복사 컨테이너에 복제
+        copyContainer.innerHTML = resultDiv.innerHTML;
+        
+        // 범위 선택
+        const range = document.createRange();
+        range.selectNodeContents(copyContainer);
+        
+        // 선택 영역 설정
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        
+        // 복사 실행
+        document.execCommand('copy');
+        
+        // 선택 해제
+        selection.removeAllRanges();
+        
         const originalText = copyBtn.textContent;
         copyBtn.textContent = '✅ 복사됨!';
         setTimeout(() => {
@@ -182,58 +205,43 @@
       errorDiv.classList.add('hidden');
     }
 
-    function convertToGomawartalkHTML(text) {
+    function displayResult(text) {
       const lines = text.split('\n');
       let html = '';
-      let inList = false;
 
       lines.forEach(line => {
         const trimmed = line.trim();
         
         if (!trimmed || trimmed === '---') {
-          // 빈 줄이나 구분선은 <p><br></p>로 처리
-          if (inList) {
-            inList = false;
-          }
-          html += '<p><br class="ProseMirror-trailingBreak"></p>\n';
+          // 빈 줄
+          html += '<p><br class="ProseMirror-trailingBreak"></p>';
         } else if (trimmed.startsWith('# ')) {
-          // 메인 타이틀 → <h2>
-          html += `<h2><strong>${processLine(trimmed.replace('# ', ''))}</strong></h2>\n`;
+          // 메인 타이틀 → h2
+          html += `<h2><strong>${processLine(trimmed.replace('# ', ''))}</strong></h2>`;
         } else if (trimmed.startsWith('## ')) {
-          // 서브 타이틀 → <h3>
-          html += `<h3>${processLine(trimmed.replace('## ', ''))}</h3>\n`;
+          // 서브 타이틀 → h3
+          html += `<h3>${processLine(trimmed.replace('## ', ''))}</h3>`;
         } else if (trimmed.startsWith('🔥 ')) {
-          // 리스트 항목 → <h3>
-          html += `<h3>${processLine(trimmed)}</h3>\n`;
-          inList = true;
+          // 리스트 → h3
+          html += `<h3>${processLine(trimmed)}</h3>`;
         } else {
-          // 일반 문장 → <h3>
-          html += `<h3>${processLine(trimmed)}</h3>\n`;
+          // 일반 문장 → h3
+          html += `<h3>${processLine(trimmed)}</h3>`;
         }
       });
 
-      return html;
+      resultDiv.innerHTML = html;
     }
 
     function processLine(text) {
       let result = text;
-      // [RED] → 고마워톡 스타일 mark 태그
+      // [RED] → 고마워톡 형식
       result = result.replace(/\[RED\](.*?)\[\/RED\]/g, '<span style="color: rgb(255, 255, 0)"><mark data-color="#ff0000" style="background-color: #ff0000; color: inherit">$1</mark></span>');
-      // [GREEN] → 고마워톡 스타일 mark 태그
+      // [GREEN] → 고마워톡 형식
       result = result.replace(/\[GREEN\](.*?)\[\/GREEN\]/g, '<mark data-color="#8ce99a" style="background-color: #8ce99a; color: inherit">$1</mark>');
-      // **볼드** → <strong>
+      // **볼드**
       result = result.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
       return result;
-    }
-
-    function displayPreview(html) {
-      // 미리보기는 스타일 적용해서 보여주기
-      const preview = html
-        .replace(/<h2>/g, '<h2 style="font-size:24px;font-weight:bold;margin:12px 0">')
-        .replace(/<h3>/g, '<h3 style="font-size:18px;margin:8px 0;line-height:1.6">')
-        .replace(/<p>/g, '<p style="margin:8px 0">');
-      
-      resultDiv.innerHTML = preview;
     }
   </script>
 </body>
