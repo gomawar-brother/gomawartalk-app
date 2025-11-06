@@ -90,7 +90,7 @@
             id="copyBtn"
             class="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors hidden"
           >
-            📋 복사하기
+            📋 HTML 복사
           </button>
         </div>
 
@@ -101,7 +101,7 @@
         </div>
 
         <div id="tip" class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl hidden">
-          <p class="text-sm text-blue-800">💡 <strong>복사 후 고마워톡 신청페이지에 붙여넣으세요!</strong><br>색상과 줄간격이 자동으로 적용됩니다.</p>
+          <p class="text-sm text-blue-800">💡 <strong>"HTML 복사" 버튼을 누른 후</strong><br>고마워톡 신청페이지 에디터에 붙여넣으세요!</p>
         </div>
       </div>
     </div>
@@ -117,6 +117,8 @@
     const errorDiv = document.getElementById('error');
     const resultDiv = document.getElementById('result');
     const tipDiv = document.getElementById('tip');
+
+    let generatedHTML = '';
 
     generateBtn.addEventListener('click', async () => {
       const target = targetInput.value.trim();
@@ -143,7 +145,8 @@
         const data = await response.json();
 
         if (data.result) {
-          displayResult(data.result);
+          generatedHTML = convertToGomawartalkHTML(data.result);
+          displayPreview(generatedHTML);
           copyBtn.classList.remove('hidden');
           tipDiv.classList.remove('hidden');
         } else {
@@ -158,9 +161,8 @@
     });
 
     copyBtn.addEventListener('click', async () => {
-      const text = resultDiv.textContent;
       try {
-        await navigator.clipboard.writeText(text);
+        await navigator.clipboard.writeText(generatedHTML);
         const originalText = copyBtn.textContent;
         copyBtn.textContent = '✅ 복사됨!';
         setTimeout(() => {
@@ -180,43 +182,58 @@
       errorDiv.classList.add('hidden');
     }
 
-    function displayResult(text) {
+    function convertToGomawartalkHTML(text) {
       const lines = text.split('\n');
       let html = '';
+      let inList = false;
 
       lines.forEach(line => {
         const trimmed = line.trim();
         
-        if (!trimmed) {
-          // 빈 줄 → 16px 간격
-          html += '<div style="height:16px"></div>';
-        } else if (trimmed === '---') {
-          // 구분선 → 위아래 여백 포함
-          html += '<div style="height:24px"></div><hr style="border:none;border-top:2px solid #e5e7eb;margin:0"><div style="height:24px"></div>';
+        if (!trimmed || trimmed === '---') {
+          // 빈 줄이나 구분선은 <p><br></p>로 처리
+          if (inList) {
+            inList = false;
+          }
+          html += '<p><br class="ProseMirror-trailingBreak"></p>\n';
         } else if (trimmed.startsWith('# ')) {
-          // 메인 타이틀 → 큰 제목
-          html += `<h1 style="font-size:32px;font-weight:bold;line-height:1.4;margin:0 0 12px 0">${processLine(trimmed.replace('# ', ''))}</h1>`;
+          // 메인 타이틀 → <h2>
+          html += `<h2><strong>${processLine(trimmed.replace('# ', ''))}</strong></h2>\n`;
         } else if (trimmed.startsWith('## ')) {
-          // 섹션 제목 → 중간 제목
-          html += `<h2 style="font-size:20px;font-weight:bold;line-height:1.5;margin:20px 0 12px 0">${processLine(trimmed.replace('## ', ''))}</h2>`;
+          // 서브 타이틀 → <h3>
+          html += `<h3>${processLine(trimmed.replace('## ', ''))}</h3>\n`;
+        } else if (trimmed.startsWith('🔥 ')) {
+          // 리스트 항목 → <h3>
+          html += `<h3>${processLine(trimmed)}</h3>\n`;
+          inList = true;
         } else {
-          // 일반 문장 → 줄간격 1.6으로 가독성 확보
-          html += `<p style="font-size:16px;line-height:1.8;margin:0 0 8px 0">${processLine(trimmed)}</p>`;
+          // 일반 문장 → <h3>
+          html += `<h3>${processLine(trimmed)}</h3>\n`;
         }
       });
 
-      resultDiv.innerHTML = html;
+      return html;
     }
 
     function processLine(text) {
       let result = text;
-      // [RED] 태그 → 빨강 배경 + 노랑 글자
-      result = result.replace(/\[RED\](.*?)\[\/RED\]/g, '<mark style="background-color:#ff0000;color:#ffff00;padding:3px 8px;font-weight:bold;border-radius:4px">$1</mark>');
-      // [GREEN] 태그 → 초록 배경 + 흰색 글자
-      result = result.replace(/\[GREEN\](.*?)\[\/GREEN\]/g, '<mark style="background-color:#0ce90a;color:#ffffff;padding:3px 8px;font-weight:bold;border-radius:4px">$1</mark>');
-      // **볼드** → 굵게
+      // [RED] → 고마워톡 스타일 mark 태그
+      result = result.replace(/\[RED\](.*?)\[\/RED\]/g, '<span style="color: rgb(255, 255, 0)"><mark data-color="#ff0000" style="background-color: #ff0000; color: inherit">$1</mark></span>');
+      // [GREEN] → 고마워톡 스타일 mark 태그
+      result = result.replace(/\[GREEN\](.*?)\[\/GREEN\]/g, '<mark data-color="#8ce99a" style="background-color: #8ce99a; color: inherit">$1</mark>');
+      // **볼드** → <strong>
       result = result.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
       return result;
+    }
+
+    function displayPreview(html) {
+      // 미리보기는 스타일 적용해서 보여주기
+      const preview = html
+        .replace(/<h2>/g, '<h2 style="font-size:24px;font-weight:bold;margin:12px 0">')
+        .replace(/<h3>/g, '<h3 style="font-size:18px;margin:8px 0;line-height:1.6">')
+        .replace(/<p>/g, '<p style="margin:8px 0">');
+      
+      resultDiv.innerHTML = preview;
     }
   </script>
 </body>
